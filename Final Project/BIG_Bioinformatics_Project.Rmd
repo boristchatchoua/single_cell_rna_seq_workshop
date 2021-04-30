@@ -1,0 +1,66 @@
+---
+title: "BIG Final Project"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(Seurat)
+library(patchwork)
+
+```
+
+```{r}
+# Load dataset
+tnbc.data <- read.csv("counts_rsem.csv.gz", header = TRUE, row.names = 1)
+```
+
+```{r}
+# creating a seurat object
+tnbc <- CreateSeuratObject(counts = tnbc.data, project = "tbnc")
+                           
+tnbc
+```
+
+```{r}
+# we identify reads that maps to the mitochondrial genome and then calculate the mitochondrial QC metrics with the PercentageFeatureSet() function.
+tnbc[["percent.mt"]] <- PercentageFeatureSet(tnbc, pattern = "^MT-")
+```
+
+ 
+```{r}
+# Visualize QC metrics as a violin plot
+VlnPlot(tnbc, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+```
+
+From the violin plot, we notice that there are no reads that map to the mitochondrial genome. 
+
+
+```{r}
+plot2 <- FeatureScatter(tnbc, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+plot2
+```
+
+
+```{r}
+tnbc <- subset(tnbc, subset = nFeature_RNA > 200 & nFeature_RNA < 10000)
+tnbc
+```
+
+```{r}
+tnbc <- NormalizeData(tnbc) %>%
+  FindVariableFeatures() %>%
+  ScaleData() %>%
+  RunPCA() %>%
+  FindNeighbors() %>%
+  FindClusters() %>%
+  RunUMAP(dims = 1:30)
+
+```
+
+```{r}
+DimPlot(tnbc, group.by = "orig.ident") + DimPlot(tnbc, group.by = "seurat_clusters") 
+
+```
+
+
