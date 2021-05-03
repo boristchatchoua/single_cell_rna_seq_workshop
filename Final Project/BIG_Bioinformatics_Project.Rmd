@@ -32,7 +32,6 @@ tnbc[["percent.mt"]] <- PercentageFeatureSet(tnbc, pattern = "^MT-")
 # Visualize QC metrics as a violin plot
 VlnPlot(tnbc, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
 ```
-
 From the violin plot, we notice that there are no reads that map to the mitochondrial genome. 
 
 
@@ -64,3 +63,14 @@ DimPlot(tnbc, group.by = "orig.ident") + DimPlot(tnbc, group.by = "seurat_cluste
 ```
 
 
+```{r}
+tnbc.markers <- FindAllMarkers(tnbc, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25) %>%
+   group_by(cluster) 
+top_n(tnbc.markers, n = 4, wt = avg_log2FC)
+```
+
+```{r}
+# we get the number of cells in each cluster 
+cell.num <- table(Idents(tnbc))
+cell.num
+```
